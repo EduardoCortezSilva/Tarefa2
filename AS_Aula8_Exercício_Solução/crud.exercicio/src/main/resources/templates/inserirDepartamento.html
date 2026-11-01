@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <title>Inserir Departamento</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script>
+            $(document).ready(function () {
+                $("#submit").on('click', function (e) { 
+                    e.preventDefault(); // Impede qualquer comportamento padrão do formulário
+                    var formData = new Object();
+                    formData.nomeDepartamento = $("#nomeDepartamento").val();
+                    formData.localDepartamento = $("#localDepartamento").val();
+                    formData.descricaoDepartamento = $("#descricaoDepartamento").val();
+                    $.ajax({
+                        url: '/inserirDepartamento',
+                        type: "POST",
+                        contentType: 'application/json; charset=ISO-8859-1',
+                        data: JSON.stringify(formData),
+                        success: function (data, textStatus, xhr) {
+                            limparCampos();
+                            if (xhr.responseURL) {
+                                window.location.href = xhr.responseURL + (xhr.responseURL.indexOf('?') !== -1 ? '&' : '?') + "t=" + new Date().getTime();
+                            } else {
+                                window.location.href = "/departamentos?t=" + new Date().getTime();
+                            }
+                        },
+                        error: function (request, message, error) {
+                            console.error("Status: " + request.status + " | Erro: " + error);
+                            limparCampos();
+                        }
+                    });
+                });
+            });
+            function limparCampos() {
+                $("#idDepartamento").val("");
+                $("#nomeDepartamento").val("");
+                $("#localDepartamento").val("");
+                $("#descricaoDepartamento").val("");
+            }
+        </script>
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-6">
+                    <h2>Dados do departamento a inserir</h2>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <form id="form" action="" method="POST">
+                    <table id="departamentoTable" 
+                           class="table table-bordered
+                           table-condensed table-striped">
+                        <tbody>
+                            <tr>
+                                <td>Nome</td>
+                                <td><input type="text" id="nomeDepartamento" name="nomeDepartamento"/></td>
+                            </tr>
+                            <tr>
+                                <td>Local</td>
+                                <td><input type="text" id="localDepartamento" name="localDepartamento"/></td>
+                            </tr>
+                            <tr>
+                                <td>Descrição</td>
+                                <td><input type="text" id="descricaoDepartamento" name="descricaoDepartamento"/></td>
+                        </tbody>
+                    </table>
+                    <input class="btn btn-primary ml-3" id="submit" type="button" value="Inserir" />
+                </form>
+            </div>
+        </div>
+    </body>
+</html>

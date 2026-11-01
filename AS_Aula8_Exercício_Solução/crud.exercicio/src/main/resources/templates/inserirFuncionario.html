@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <title>Inserir Funcionario</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script>
+            function getAllDepartamento() {
+                $.ajax({
+                    url: '/departamentos-raw',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (departamento) {
+                        var selectElement = document.getElementById('departamento');
+                        selectElement.innerHTML = ""; // Limpa quaisquer opções existentes
+                        for (var i = 0; i < departamento.length; i++) {
+                            var option = document.createElement('option');
+                            option.value = departamento[i].idDepartamento;
+                            option.text = departamento[i].nomeDepartamento;
+                            selectElement.appendChild(option);
+                        }
+                    },
+                    error: function (request, message, error) {
+                        console.error("Erro ao buscar departamentos: " + error);
+                    }
+                });
+            }
+            getAllDepartamento();
+            $(document).ready(function () {
+                $("#submit").on('click', function (e) {
+                    e.preventDefault(); // Impede qualquer comportamento padrão do formulário
+                    var formData = new Object();
+                    formData.nomeFuncionario = $("#nomeFuncionario").val();
+                    formData.departamento = $("#departamento").val();
+                    formData.funcaoFuncionario = $("#funcaoFuncionario").val();
+                    formData.registroFuncionario = $("#registroFuncionario").val();
+                    $.ajax({
+                        url: '/inserirFuncionario',
+                        type: "POST",
+                        contentType: 'application/json; charset=ISO-8859-1',
+                        data: JSON.stringify(formData),
+                        success: function (data, textStatus, xhr) {
+                            limparCampos();
+                            if (xhr.responseURL) {
+                                var separador = xhr.responseURL.indexOf('?') !== -1 ? '&' : '?';
+                                window.location.href = xhr.responseURL + separador + "t=" + new Date().getTime();
+                            } else {
+                                window.location.href = "/funcionarios?t=" + new Date().getTime();
+                            }
+                        },
+                        error: function (request, message, error) {
+                            console.error("Status do Erro: " + request.status + " | Detalhe: " + error);
+                            alert("Erro ao inserir funcionário. Verifique os dados.");
+                            limparCampos();
+                        }
+                    });
+                });
+            });
+            function limparCampos() {
+                $("#idFuncionario").val("");
+                $("#nomeFuncionario").val("");
+                $("#departamento").val("");
+                $("#funcaoFuncionario").val("");
+                $("#registroFuncionario").val("");
+            }
+        </script>
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-6">
+                    <h2>Dados do funcionário a inserir</h2>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <form id="form" action="" method="POST">
+                    <table id="funcionarioTable" 
+                           class="table table-bordered
+                           table-condensed table-striped">
+                        <tbody>
+                            <tr>
+                                <td>Nome</td>
+                                <td><input type="text" id="nomeFuncionario" name="nomeFuncionario"/></td>
+                            </tr>
+                            <tr>
+                                <td>Departamento</td>
+                                <td>
+                                    <select id="departamento" name="departamento">
+                                        <!-- As opções serão preenchidas dinamicamente via JavaScript -->
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Funcão</td>
+                                <td><input type="text" id="funcaoFuncionario" name="funcaoFuncionario"/></td>
+                            </tr>
+                            <tr>
+                                <td>Registro</td>
+                                <td><input type="text" id="registroFuncionario" name="registroFuncionario"/></td>
+                        </tbody>
+                    </table>
+                    <input class="btn btn-primary ml-3" id="submit" type="button" value="Inserir" />
+                </form>
+            </div>
+        </div>
+    </body>
+</html>

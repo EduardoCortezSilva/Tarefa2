@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <title>Alterar Funcionário</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+        <script>
+            $(document).ready(function () {
+                const urlParams = new URLSearchParams(location.search);
+                getFuncionario(urlParams.get('id'));
+                $("#submit").on('click', function (e) {
+                    e.preventDefault(); // Impede qualquer comportamento padrão do formulário
+                    var formData = new Object();
+                    formData.idFuncionario = $("#idFuncionario").val();
+                    formData.departamento = $("#departamento").val();
+                    formData.nomeFuncionario = $("#nomeFuncionario").val();
+                    formData.funcaoFuncionario = $("#funcaoFuncionario").val();
+                    formData.registroFuncionario = $("#registroFuncionario").val();
+                    $.ajax({
+                        url: '/alterarFuncionario',
+                        type: "POST",
+                        contentType: 'application/json; charset=ISO-8859-1',
+                        data: JSON.stringify(formData),
+                        success: function (data, textStatus, xhr) {
+                            limparCampos();
+                            if (xhr.responseURL) {
+                                var separador = xhr.responseURL.indexOf('?') !== -1 ? '&' : '?';
+                                window.location.href = xhr.responseURL + separador + "t=" + new Date().getTime();
+                            } else {
+                                window.location.href = "/funcionarios?t=" + new Date().getTime();
+                            }
+                        },
+                        error: function (request, message, error) {
+                            console.error("Erro na alteração. Status: " + request.status);
+                            alert("Não foi possível salvar as alterações do funcionário.");
+                            limparCampos();
+                        }
+                    });
+                })
+            });
+
+            function limparCampos(){
+                $("#idFuncionario").val("");
+                $("#departamento").val("");
+                $("#nomeFuncionario").val("");
+                $("#funcaoFuncionario").val("");
+                $("#registroFuncionario").val("");
+            }
+
+            function getFuncionario(id) {
+                $.ajax({
+                    url: '/funcionario/' + id,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (funcionario) {
+                        funcionarioBuildTable(funcionario);
+                    },
+                    error: function (request, message, error) {
+                        handleException(request, message, error);
+                    }
+                });
+            }
+
+            function funcionarioBuildTable(funcionario) {
+                if ($("#funcionarioTable tbody").length === 0) {
+                    $("#funcionarioTable").append("<tbody></tbody>");
+                }
+                var content =
+                        "<tr>" +
+                        "<td>ID</td>" +
+                        '<td><input type="text" class="form-control" id="idFuncionario" name="idFuncionario" value="' + funcionario.idFuncionario + '" readonly="readonly"/></td>' +
+                        "</tr>" +
+                        "<tr>" +
+                        "<td>ID Departamento</td>" +
+                        '<td><input type="text" class="form-control" id="departamento" name="departamento" value="' + funcionario.departamento + '" readonly="readonly"/></td>' +
+                        "</tr>" +
+                        "<tr>" +
+                        "<td>Nome</td>" +
+                        '<td><input type="text" class="form-control" id="nomeFuncionario" name="nomeFuncionario" value="' + funcionario.nomeFuncionario + '"/></td>' +
+                        "</tr>" +
+                        "<tr>" +
+                        "<td>Função</td>" + // Corrigido de Preço para Função
+                        '<td><input type="text" class="form-control" id="funcaoFuncionario" name="funcaoFuncionario" value="' + funcionario.funcaoFuncionario + '"/></td>' +
+                        "</tr>" +
+                        "<tr>" +
+                        "<td>Registro</td>" + // Corrigido de Quantidade para Registro
+                        '<td><input type="text" class="form-control" id="registroFuncionario" name="registroFuncionario" value="' + funcionario.registroFuncionario + '"/></td>' +
+                        "</tr>";
+                $("#funcionarioTable tbody").append(content);
+            }
+
+            function handleException(request, message, error) {
+                var msg = "";
+                msg += "Code: " + request.status + "\n";
+                msg += "Text: " + request.statusText + "\n";
+                if (request.responseJSON !== null && request.responseJSON !== undefined) {
+                    msg += "Message: " + request.responseJSON.Message + "\n";
+                }
+                alert(msg);
+            }
+        </script>
+    </head>
+    <body>
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-sm-6">
+                    <h2>Dados do funcionário a alterar</h2>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-sm-6">
+                    <form id="form" action="" method="POST">
+                        <table id="funcionarioTable" class="table table-bordered table-condensed table-striped">
+                            <!-- Preenchido dinamicamente via JS -->
+                        </table>
+                        <input class="btn btn-primary" id="submit" type="button" value="Alterar" />
+                    </form>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

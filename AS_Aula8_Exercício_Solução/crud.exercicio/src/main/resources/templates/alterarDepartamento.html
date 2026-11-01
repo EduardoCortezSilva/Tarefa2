@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <title>Alterar Departamento</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script>
+            $(document).ready(function () {
+                const urlParams = new URLSearchParams(location.search);
+                getDepartamento(urlParams.get('id'));
+                $("#submit").on('click', function (e) {
+                    e.preventDefault(); // Impede qualquer comportamento padrão do formulário
+                    var formData = new Object();
+                    formData.idDepartamento = $("#idDepartamento").val();
+                    formData.nomeDepartamento = $("#nomeDepartamento").val();
+                    formData.localDepartamento = $("#localDepartamento").val();
+                    formData.descricaoDepartamento = $("#descricaoDepartamento").val();
+                    $.ajax({
+                        url: '/alterarDepartamento',
+                        type: "POST",
+                        contentType: 'application/json; charset=ISO-8859-1',
+                        data: JSON.stringify(formData),
+                        success: function (data, textStatus, xhr) {
+                            limparCampos();
+                            if (xhr.responseURL) {
+                                var separador = xhr.responseURL.indexOf('?') !== -1 ? '&' : '?';
+                                window.location.href = xhr.responseURL + separador + "t=" + new Date().getTime();
+                            } else {
+                                window.location.href = "/departamentos?t=" + new Date().getTime();
+                            }
+                        },
+                        error: function (request, message, error) {
+                            console.error("Erro ao alterar: " + request.status);
+                            alert("Não foi possível salvar as alterações.");
+                            limparCampos();
+                        }
+                    });
+                });
+            });
+
+            function limparCampos(){
+                $("#idDepartamento").val("");
+                $("#nomeDepartamento").val("");
+                $("#localDepartamento").val("");
+                $("#descricaoDepartamento").val("");
+            }
+
+            function getDepartamento(id) {
+                $.ajax({
+                    url: '/departamento/' + id,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (departamento) {
+                        departamentoBuildTable(departamento);
+                    },
+                    error: function (request, message, error) {
+                        handleException(request, message, error);
+                    }
+                });
+            }
+
+            function departamentoBuildTable(departamento) {
+                if ($("#departamentoTable tbody").length === 0) {
+                    $("#departamentoTable").append("<tbody></tbody>");
+                }
+                var content =
+                        "<tr>" +
+                        "<td>ID</td>" +
+                        '<td><input type="text" class="form-control" id="idDepartamento" name="idDepartamento" value="' + departamento.idDepartamento + '" readonly="readonly"/></td>' +
+                        "</tr>" +
+                        "<tr>" +
+                        "<td>Nome</td>" +
+                        '<td><input type="text" class="form-control" id="nomeDepartamento" name="nomeDepartamento" value="' + departamento.nomeDepartamento + '"/></td>' +
+                        "</tr>" +
+                        "<tr>" +
+                        "<td>Local</td>" + // Corrigido de Preço para Local
+                        '<td><input type="text" class="form-control" id="localDepartamento" name="localDepartamento" value="' + departamento.localDepartamento + '"/></td>' +
+                        "</tr>" +
+                        "<tr>" +
+                        "<td>Descrição</td>" + // Corrigido de Quantidade para Descrição
+                        '<td><input type="text" class="form-control" id="descricaoDepartamento" name="descricaoDepartamento" value="' + departamento.descricaoDepartamento + '"/></td>' +
+                        "</tr>";
+                        
+                $("#departamentoTable tbody").append(content);
+            }
+
+            function handleException(request, message, error) {
+                var msg = "";
+                msg += "Code: " + request.status + "\n";
+                msg += "Text: " + request.statusText + "\n";
+                if (request.responseJSON !== null && request.responseJSON !== undefined) {
+                    msg += "Message: " + request.responseJSON.Message + "\n";
+                }
+                alert(msg);
+            }
+        </script>
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-6">
+                    <h2>Dados do departamento a alterar</h2>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <form id="form" action="" method="POST">
+                    <table id="departamentoTable" 
+                           class="table table-bordered
+                           table-condensed table-striped">
+                    </table>
+                    <input class="btn btn-primary ml-3" id="submit" type="button" value="Alterar" />
+                </form>
+            </div>
+        </div>
+    </body>
+</html>

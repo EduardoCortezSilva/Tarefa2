@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <title>Lista de Funcionarios</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script>
+            $(document).ready(function () {
+                listFuncionarios();
+            });
+            function listFuncionarios() {
+                $.ajax({
+                    url: '/funcionarios-raw',
+                    type: 'GET',
+                    dataType: 'json',
+                    cache: false,
+                    success: function (funcionarios) {
+                        listFuncionariosSuccess(funcionarios);
+                    },
+                    error: function (request, message, error) {
+                        handleException(request, message, error);
+                    }
+                });
+            }
+            function listFuncionariosSuccess(funcionarios) {
+                $.each(funcionarios, function (index, funcionario) {
+                    funcionarioAddRow(funcionario);
+                });
+            }
+            function funcionarioAddRow(funcionario) {
+                if ($("#funcionarioTable tbody").length === 0) {
+                    $("#funcionarioTable").append("<tbody></tbody>");
+                }
+                $("#funcionarioTable tbody").append(
+                funcionarioBuildTableRow(funcionario));
+            }
+            function funcionarioBuildTableRow(funcionario) {
+                var ret =
+                "<tr>" +
+                "<td>" + funcionario.idFuncionario + "</td>" +
+                "<td>" + funcionario.nomeFuncionario + "</td>" +
+                "<td>" + funcionario.departamento + "</td>" +
+                "<td>" + funcionario.funcaoFuncionario + "</td>" +
+                "<td>" + funcionario.registroFuncionario + "</td>" +
+                '<td> <a href="/remover-funcionario/' + funcionario.idFuncionario + '">Remover</a></td>' +
+                '<td> <a href="/alterar-funcionario?id=' + funcionario.idFuncionario + '">Alterar</a></td>' +
+                "</tr>";
+                return ret;
+            }
+            function handleException(request, message, error) {
+                var msg = "";
+                msg += "Code: " + request.status + "\n";
+                msg += "Text: " + request.statusText + "\n";
+                if (request.responseJSON !== null) {
+                    msg += "Message" + request.responseJSON.Message + "\n";
+                }
+                alert(msg);
+            }
+        </script>
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-6">
+                    <h2>Lista de funcionários.</h2>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <table id="funcionarioTable" 
+                       class="table table-bordered
+                       table-condensed table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Departamento</th>
+                            <th>Função</th>
+                            <th>Registro</th>
+                            <th>Remover</th>
+                            <th>Alterar</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+        <a href="/inserir-funcionario" class="btn btn-primary ml-3">Inserir novo funcionário.</a>
+        <a href="/departamentos" class="btn btn-primary ml-3">Cadastro de departamentos.</a>
+    </body>
+</html>

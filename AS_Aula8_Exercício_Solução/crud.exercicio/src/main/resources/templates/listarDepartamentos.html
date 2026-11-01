@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <title>Lista de Departamentos</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script>
+            $(document).ready(function () {
+                listDepartamentos();
+            });
+            function listDepartamentos() {
+                $.ajax({
+                    url: '/departamentos-raw',
+                    type: 'GET',
+                    dataType: 'json',
+                    cache: false,
+                    success: function (departamentos) {
+                        listDepartamentosSuccess(departamentos);
+                    },
+                    error: function (request, message, error) {
+                        handleException(request, message, error);
+                    }
+                });
+            }
+            function listDepartamentosSuccess(departamentos) {
+                $.each(departamentos, function (index, departamento) {
+                    departamentoAddRow(departamento);
+                });
+            }
+            function departamentoAddRow(departamento) {
+                if ($("#departamentoTable tbody").length === 0) {
+                    $("#departamentoTable").append("<tbody></tbody>");
+                }
+                $("#departamentoTable tbody").append(
+                        departamentoBuildTableRow(departamento));
+            }
+            function departamentoBuildTableRow(departamento) {
+                var funcionariosString = "";
+                for (var i = 0; i < departamento.funcionarios.length; i++) {
+                    funcionariosString += departamento.funcionarios[i].nomeFuncionario;
+                    if (i < departamento.funcionarios.length - 1) {
+                        funcionariosString += ", "; // Adicione uma vírgula e um espaço entre os nomes, exceto para o último funcionário
+                    }
+                }
+                var ret =
+                    "<tr>" +
+                    "<td>" + departamento.idDepartamento + "</td>" +
+                    "<td>" + departamento.nomeDepartamento + "</td>" +
+                    "<td>" + departamento.localDepartamento + "</td>" +
+                    "<td>" + departamento.descricaoDepartamento + "</td>" +
+                    "<td>" + funcionariosString + "</td>" +
+                    '<td> <a href="/remover-departamento/' + departamento.idDepartamento + '">Remover</a></td>' +
+                    '<td> <a href="/alterar-departamento?id=' + departamento.idDepartamento + '">Alterar</a></td>' +
+                    "</tr>";
+                return ret;
+            }
+
+            function handleException(request, message, error) {
+                var msg = "";
+                msg += "Code: " + request.status + "\n";
+                msg += "Text: " + request.statusText + "\n";
+                if (request.responseJSON !== null) {
+                    msg += "Message" + request.responseJSON.Message + "\n";
+                }
+                alert(msg);
+            }
+        </script>
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-6">
+                    <h2>Lista de departamentos.</h2>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <table id="departamentoTable" 
+                       class="table table-bordered
+                       table-condensed table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Local</th>
+                            <th>Descrição</th>
+                            <th>Funcionários</th>
+                            <th>Remover</th>
+                            <th>Alterar</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+        <a href="/inserir-departamento" class="btn btn-primary ml-3">Inserir novo departamento.</a>
+        <a href="/funcionarios" class="btn btn-primary ml-3">Cadastro de funcionários.</a>
+    </body>
+</html>

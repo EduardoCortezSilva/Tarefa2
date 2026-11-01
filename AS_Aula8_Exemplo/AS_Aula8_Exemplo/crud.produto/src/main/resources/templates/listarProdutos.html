@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <title>Lista de Produtos</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script>
+            $(document).ready(function () {
+                listProdutos();
+            });
+            function listProdutos() {
+                $.ajax({
+                    url: '/produtos',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (produtos) {
+                        listProdutosSuccess(produtos);
+                    },
+                    error: function (request, message, error) {
+                        handleException(request, message, error);
+                    }
+                });
+            }
+            function listProdutosSuccess(produtos) {
+                $.each(produtos, function (index, produto) {
+                    produtoAddRow(produto);
+                });
+            }
+            function produtoAddRow(produto) {
+                if ($("#productTable tbody").length === 0) {
+                    $("#productTable").append("<tbody></tbody>");
+                }
+                $("#productTable tbody").append(
+                        produtoBuildTableRow(produto));
+            }
+            function produtoBuildTableRow(produto) {
+                var ret =
+                        "<tr>" +
+                        "<td>" + produto.idProduto + "</td>" +
+                        "<td>" + produto.nomeProduto + "</td>" +
+                        "<td>" + produto.precoProduto + "</td>" +
+                        "<td>" + produto.quantidadeProduto + "</td>" +
+                        '<td> <a href="/remover/' + produto.idProduto + '">Remover</a></td>' +
+                        '<td> <a href="/alterar?id=' + produto.idProduto + '">Alterar</a></td>' +
+                        "</tr>";
+                return ret;
+            }
+            function handleException(request, message, error) {
+                var msg = "";
+                msg += "Code: " + request.status + "\n";
+                msg += "Text: " + request.statusText + "\n";
+                if (request.responseJSON !== null) {
+                    msg += "Message" + request.responseJSON.Message + "\n";
+                }
+                alert(msg);
+            }
+        </script>
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-6">
+                    <h2>Lista de produtos</h2>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <table id="productTable" 
+                       class="table table-bordered
+                       table-condensed table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Preço</th>
+                            <th>Quantidade</th>
+                            <th>Remover</th>
+                            <th>Alterar</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+        <a href="/inserir">   Inserir novo produto</a>
+    </body>
+</html>
